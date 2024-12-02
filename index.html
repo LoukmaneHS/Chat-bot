@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>MobileBERT Question Answering</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/qna"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+      text-align: center;
+      margin-top: 20px;
+    }
+    textarea, input, button {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 16px;
+      width: 80%;
+    }
+    #answer {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <h3>Context (you can paste your own content in the text area)</h3>
+    <textarea id="context" rows="10" cols="80">
+      Nikola Tesla (/ˈtɛslə/; Serbian: Никола Тесла; 10 July 1856 – 7 January 1943) was a Serbian-American inventor, electrical engineer...
+    </textarea>
+    <h3>Question</h3>
+    <input type="text" id="question" placeholder="Enter your question">
+    <button id="search">Search</button>
+    <h3>Answers</h3>
+    <div id="answer"></div>
+  </div>
+
+  <script>
+    // تحميل النموذج QnA
+    let modelPromise = {};
+    let search;
+    let input;
+    let contextDiv;
+    let answerDiv;
+
+    const process = async () => {
+      const model = await modelPromise;
+      const answers = await model.findAnswers(input.value, contextDiv.value);
+      console.log(answers);
+      answerDiv.innerHTML =
+          answers.map(answer => answer.text + ' (score =' + answer.score + ')')
+              .join('<br>');
+    };
+
+    window.onload = () => {
+      // تحميل النموذج
+      modelPromise = qna.load();
+      input = document.getElementById('question');
+      search = document.getElementById('search');
+      contextDiv = document.getElementById('context');
+      answerDiv = document.getElementById('answer');
+      
+      // ربط الزر مع عملية التحليل
+      search.onclick = process;
+
+      // تمكين البحث عند الضغط على مفتاح Enter
+      input.addEventListener('keyup', async (event) => {
+        if (event.key === 'Enter') {
+          process();
+        }
+      });
+    };
+  </script>
+</body>
+</html>
